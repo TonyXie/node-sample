@@ -30,14 +30,26 @@ io.sockets.on('connection', function(client) {
     client.set('nickname', nickname);
     console.log(nickname + " has joined the room");
     names.push(nickname);
-    client.broadcast.emit("join", names);
+    client.broadcast.emit("new_user", nickname);
+    messages.forEach(function(message) {
+      client.emit("message", message);
+    });
+    client.emit("join", names);
   });
 
   client.on('chat', function(message) {
     messages.push(message);
-    client.broadcast.emit('chat_messages', messages);
+    client.broadcast.emit('message', message);
     console.log('current list of all messages: ' + messages);    
   })
+
+   // deal with disconnect
+  client.on('disconnect', function(name) {
+    client.get('nickname', function(err, name) {
+      client.broadcast.emit("remove_chatter", name);
+    });
+  });
+
 });
 
 app.listen(3000);
