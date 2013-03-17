@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tony's little node app</title>
+  <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css" />
+</head>
+
+<div class="hero-unit">
+  <h1 class = "appendTarget">Why hello there</h1>
+  <p>Welcome to my little app...!</p>
+  <ul id = "names_in_room">
+    people in this room... 
+  </ul>
+  <form action="#", method="#", class="chat">
+      <label for="chat">Chat</label>
+      <input type="text", id="chat_message">
+      <input type="submit", name="Submit", id="message">
+  </form>
+</div>
+<div class="hero-unit">
+  <ul id="messages_list">
+    Messages...
+  </ul>
+</div>
+
+<!-- Scripts -->
+<script src="/socket.io/lib/socket.io.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+<script>
+  var server = io.connect('http://localhost:3000');
+
+  // chat message functionality 
+  $("#message").click(function(e) {
+    var message = $("#chat_message").val();
+    $("#chat_message").val('');
+    console.log(message);
+    server.emit('chat', message);
+    e.preventDefault();
+  });
+
+
+  // when client connects, prompt for name
+  server.on('connect', function(data){
+    nickname = prompt("What is your name");
+    server.emit('join', nickname);
+    $('#names_in_room').append('<li>' + nickname + '</li>');
+  });
+
+  // display the names of all other users in room
+  server.on('join', function(names) {
+    console.log(names);
+    // alert(nickname);
+    // console.log(names);
+    names.forEach(function(name){
+      $('#names_in_room').append('<li>' + name + '</li>');
+    });
+  });
+
+  // display chat messages in room
+  server.on('chat_messages', function(messages) {
+    console.log(messages);
+    messages.forEach(function(message){
+      $('#messages_list').append('<li>' + message + '</li>');
+    });
+  });
+
+</script>
+
+</html>
